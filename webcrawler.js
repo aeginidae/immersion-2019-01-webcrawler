@@ -1,4 +1,7 @@
 const webCrawler = (url, max = 10) => {
+  // url is the starting point of the crawl
+  // max is the maximum amount of urls you want to crawl through
+  // default is 10 for performance purposes
   const visited = [];
   let crawlCount = 0;
   const crawl = (crawled = url) => {
