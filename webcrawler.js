@@ -6,12 +6,11 @@ const webCrawler = (url, max = 10) => {
   foundURLs = [];
   let crawlCount = 0;
   const crawl = (crawled = url) => {
-    if (visited.includes(crawled)) return;
-    else if (crawlCount >= max) return foundURLs;
-    else {
-      crawlCount++;
-      visited.push(crawled);
-      // console.log(crawlCount, visited);
+    let result;
+    if (visited.includes(crawled) || crawlCount > max) return;
+    crawlCount++;
+    const query = new Promise((resolve, reject) => {
+      console.log(crawlCount, visited);
       const request = new XMLHttpRequest();
       request.open('GET', crawled);
       request.responseType = 'document';
@@ -19,17 +18,23 @@ const webCrawler = (url, max = 10) => {
         if (request.readyState === 4 && request.status === 200) {
           const body = request.response.body;
           Array.prototype.forEach.call(body.getElementsByTagName('a'), linkTag => {
-            // console.log(linkTag.href.replace(/(#.*$)|(\$.*$)/, '') === body.baseURI);
-            if (linkTag.href.replace(/(#.*$)|(\$.*$)/, '') === body.baseURI) return;
+            if (linkTag.href.replace(/(#.*$)|(\$.*$)/, '') === body.baseURI) reject();
             else {
               foundURLs.push(linkTag.href);
               crawl(linkTag.href);
+              if (crawlCount >= max) resolve(foundURLs);
+              reject();
             }
           });
         }
       }
       request.send();
-    }
-  }
-  return crawl;
-}
+    });
+    query.then((success) => {
+        result = success;
+    });
+    if (result !== undefined) return result;
+  };
+
+  return crawl(url);
+};
